@@ -7,4 +7,5 @@ RUN mkdir -p $APP_HOME/static
 COPY requirements.txt $APP_HOME/
 RUN pip install --upgrade pip
 RUN pip3 install -r $APP_HOME/requirements.txt
+COPY . $APP_HOME/
 RUN python manage.py collectstatic --noinput
