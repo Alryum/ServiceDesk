@@ -1,3 +1,4 @@
+from datetime import datetime
 import pytest
 from rest_framework.test import APIClient
 from rest_framework import status
@@ -21,6 +22,55 @@ def test_operator():
 @pytest.fixture
 def ticket():
     return Ticket.objects.create(subject='Test Ticket', user_email='user@example.com')
+
+# == get tests
+
+
+@pytest.mark.django_db
+def test_filter_by_status(api_client):
+    Ticket.objects.create(subject='Test 1', user_email='user1@test.com', status='new')
+    Ticket.objects.create(subject='Test 2', user_email='user2@test.com', status='closed')
+
+    url = reverse('ticket-list') + '?status=new'
+    response = api_client.get(url)
+
+    assert response.status_code == status.HTTP_200_OK
+    assert len(response.data) == 1
+    assert response.data[0]['status'] == 'new'
+
+
+@pytest.mark.django_db
+def test_sorting_by_created_at(api_client):
+    Ticket.objects.create(subject='Test 2', user_email='user2@test.com')
+    Ticket.objects.create(subject='Test 1', user_email='user1@test.com')
+    Ticket.objects.create(subject='Test 3', user_email='user3@test.com')
+
+    url = reverse('ticket-list') + '?ordering=-created_at'
+    response = api_client.get(url)
+
+    assert response.status_code == status.HTTP_200_OK
+    assert response.data[0]['subject'] == 'Test 3'
+    assert response.data[1]['subject'] == 'Test 1'
+    assert response.data[2]['subject'] == 'Test 2'
+
+
+@pytest.mark.django_db
+def test_filter_by_date_range(api_client):
+    ticket = Ticket.objects.create(subject='Test 1', user_email='user1@test.com')
+    ticket.created_at = datetime(2023, 12, 1, 10, 0, 0)
+    ticket.save()
+    ticket = Ticket.objects.create(
+        subject='Test 2', user_email='user2@test.com', created_at='2023-12-03T10:00:00Z')
+    ticket.created_at = datetime(2023, 12, 3, 10, 0, 0)
+    ticket.save()
+
+    url = reverse('ticket-list') + \
+        '?created_at_min=2023-12-01T00:00:00Z&created_at_max=2023-12-02T23:59:59Z'
+    response = api_client.get(url)
+
+    assert response.status_code == status.HTTP_200_OK
+    assert len(response.data) == 1
+    assert response.data[0]['subject'] == 'Test 1'
 
 # == create tests
 
