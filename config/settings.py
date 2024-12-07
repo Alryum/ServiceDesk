@@ -24,6 +24,7 @@ INSTALLED_APPS = [
     'rest_framework',
     'django_celery_results',
     'drf_yasg',
+    'django_filters',
 ]
 
 MIDDLEWARE = [
@@ -99,6 +100,14 @@ STATIC_ROOT = BASE_DIR / 'static'
 
 
 DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
+
+# DRF
+REST_FRAMEWORK = {
+    'DEFAULT_FILTER_BACKENDS': [
+        'django_filters.rest_framework.DjangoFilterBackend',
+        'rest_framework.filters.OrderingFilter',
+    ],
+}
 
 #CELERY
 CELERY_BROKER_URL = 'redis://redis:6379/0'
