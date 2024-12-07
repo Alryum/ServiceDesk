@@ -23,6 +23,7 @@ INSTALLED_APPS = [
     # 3rd party
     'rest_framework',
     'django_celery_results',
+    'drf_yasg',
 ]
 
 MIDDLEWARE = [
