@@ -10,7 +10,8 @@
 - **API документация:** Swagger(drf-yasg)  
 - **Тесты:** pytest  
 - **Фоновые таски:** Сelery  
-- **Брокер сообщений для Celery:** Redis
+- **Брокер сообщений для Celery:** Redis  
+- **Контейнеризация:** Docker + docker compose  
 
 ---
 
