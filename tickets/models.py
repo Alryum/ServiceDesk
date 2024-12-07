@@ -26,3 +26,14 @@ class Message(models.Model):
 
     def __str__(self):
         return f'Сообщение от {self.sender}: {self.sent_at}'
+
+
+class IncomingEmail(models.Model):
+    """Эмуляция входящих писем"""
+    sender = models.EmailField()
+    subject = models.CharField(max_length=255)
+    body = models.TextField()
+    received_at = models.DateTimeField(auto_now_add=True)
+
+    def __str__(self):
+        return f"Email from {self.sender} - {self.subject}"
