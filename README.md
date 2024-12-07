@@ -7,10 +7,10 @@
 ### **Основной стек:**
 - **Backend:** Django + Django REST Framework  
 - **База данных:** PostgreSQL  
-- **API документация:** Swagger  
+- **API документация:** Swagger(drf-yasg)  
 - **Тесты:** pytest  
-- **Фоновые таски** Сelery  
-- **Брокер сообщений для Celery** Redis
+- **Фоновые таски:** Сelery  
+- **Брокер сообщений для Celery:** Redis
 
 ---
 
@@ -18,8 +18,8 @@
 
 ### 1. **Клонируйте репозиторий**
 ```bash
-git clone https://github.com/alryum/servicedesk.git
-cd servicedesk   
+git clone https://github.com/Alryum/ServiceDesk.git
+cd ServiceDesk   
 ```
 
 ### 2. **Настройте виртуальное окружение и установите зависимости**  
@@ -31,6 +31,7 @@ pip install -r requirements.txt
 - Переименуйте файл ".env.example" в ".env"  
 
 ### 3. **Запуск проекта**  
+- **Контейнеры**  
 ```bash
 docker compose up -d --build
 ```
