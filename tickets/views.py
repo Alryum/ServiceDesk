@@ -7,6 +7,7 @@ from .models import Ticket, Message
 from .serializers import TicketSerializer, CreateTicketSerializer
 from .tasks import send_auto_reply
 
+
 class TicketViewSet(viewsets.ModelViewSet):
     queryset = Ticket.objects.all()
     serializer_class = TicketSerializer
@@ -24,7 +25,8 @@ class TicketViewSet(viewsets.ModelViewSet):
             queryset = sorted(queryset, key=lambda ticket: status_order[ticket.status])
         elif ordering == '-status':
             status_order = {'new': 0, 'in_progress': 1, 'closed': 2}
-            queryset = sorted(queryset, key=lambda ticket: status_order[ticket.status], reverse=True)
+            queryset = sorted(
+                queryset, key=lambda ticket: status_order[ticket.status], reverse=True)
 
         return queryset
 
@@ -48,10 +50,13 @@ class TicketViewSet(viewsets.ModelViewSet):
         send_auto_reply.delay(ticket.id, 'Ваше обращение закрыто. Спасибо, что обратились к нам!')
         return Response({'detail': 'Тикет закрыт и уведомление отправлено.'})
 
-    @action(detail=True, methods=['post'])
+    @action(detail=True, methods=['post'], url_path='assign', url_name='assign')
     def assign_operator(self, request, pk=None):
         ticket = self.get_object()
         operator = request.user
+
+        if not operator.is_authenticated:
+            return Response(status=status.HTTP_401_UNAUTHORIZED)
 
         if ticket.status == 'closed':
             return Response({'detail': 'Нельзя назначить оператора для закрытого тикета.'}, status=status.HTTP_400_BAD_REQUEST)

@@ -91,3 +91,36 @@ def test_close_ticket_not_found(api_client, test_operator):
     response = api_client.post(url)
 
     assert response.status_code == status.HTTP_404_NOT_FOUND
+
+
+# == assign_operator tests
+
+
+@pytest.mark.django_db
+def test_assign_operator_success(api_client, ticket, test_operator):
+    api_client.force_authenticate(user=test_operator)
+    url = reverse('ticket-assign', args=[ticket.id])
+    response = api_client.post(url)
+    assert response.status_code == status.HTTP_200_OK
+    assert response.data['detail'] == 'Тикет назначен оператору.'
+
+    ticket.refresh_from_db()
+    assert ticket.operator == test_operator
+
+
+@pytest.mark.django_db
+def test_assign_operator_ticket_not_found(api_client, test_operator):
+    """Попытка назначения оператора на несуществующий тикет"""
+    api_client.force_authenticate(user=test_operator)
+    url = reverse('ticket-assign', args=[999])
+    response = api_client.post(url)
+
+    assert response.status_code == status.HTTP_404_NOT_FOUND
+
+
+@pytest.mark.django_db
+def test_assign_operator_unauthorized(api_client, ticket):
+    url = reverse('ticket-assign', args=[ticket.id])
+    response = api_client.post(url)
+
+    assert response.status_code == status.HTTP_401_UNAUTHORIZED
