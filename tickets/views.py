@@ -6,29 +6,16 @@ from django_filters.rest_framework import DjangoFilterBackend
 from .models import Ticket, Message
 from .serializers import TicketSerializer, CreateTicketSerializer
 from .tasks import send_auto_reply
+from .filters import TicketFilter
 
 
 class TicketViewSet(viewsets.ModelViewSet):
     queryset = Ticket.objects.all()
     serializer_class = TicketSerializer
     filter_backends = [DjangoFilterBackend, OrderingFilter]
-    filterset_fields = ['status']
+    filterset_class = TicketFilter
     ordering_fields = ['created_at', 'status']
     ordering = ['created_at']
-
-    def get_queryset(self):
-        queryset = super().get_queryset()
-        ordering = self.request.query_params.get('ordering')
-
-        if ordering == 'status':
-            status_order = {'new': 0, 'in_progress': 1, 'closed': 2}
-            queryset = sorted(queryset, key=lambda ticket: status_order[ticket.status])
-        elif ordering == '-status':
-            status_order = {'new': 0, 'in_progress': 1, 'closed': 2}
-            queryset = sorted(
-                queryset, key=lambda ticket: status_order[ticket.status], reverse=True)
-
-        return queryset
 
     def create(self, request, *args, **kwargs):
         serializer = CreateTicketSerializer(data=request.data)
