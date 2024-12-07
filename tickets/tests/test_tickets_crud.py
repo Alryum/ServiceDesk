@@ -3,7 +3,7 @@ from rest_framework.test import APIClient
 from rest_framework import status
 from django.contrib.auth.models import User
 from django.urls import reverse
-from tickets.models import Ticket
+from tickets.models import Message, Ticket
 
 # == fixtures
 
@@ -124,3 +124,40 @@ def test_assign_operator_unauthorized(api_client, ticket):
     response = api_client.post(url)
 
     assert response.status_code == status.HTTP_401_UNAUTHORIZED
+
+# == reply tests
+
+
+@pytest.mark.django_db
+def test_reply_success(api_client, ticket, test_operator):
+    api_client.force_authenticate(user=test_operator)
+    ticket.operator = test_operator
+    ticket.save()
+    url = reverse('ticket-reply', args=[ticket.id])
+    response = api_client.post(url, data={'content': 'Привет, я - принц из Нигерии, такое дело...'})
+
+    assert response.status_code == status.HTTP_200_OK
+    assert response.data['detail'] == 'Ответ отправлен пользователю.'
+
+    assert Message.objects.filter(ticket=ticket, sender='operator',
+                                  content='Привет, я - принц из Нигерии, такое дело...').exists()
+
+
+@pytest.mark.django_db
+def test_reply_without_operator(api_client, ticket):
+    """Попытка ответа на тикет без назначенного оператора"""
+    ticket.operator = None
+    ticket.save()
+    url = reverse('ticket-reply', args=[ticket.id])
+    response = api_client.post(url, data={'content': 'Арбуз больше не ягода.'})
+    assert response.status_code == status.HTTP_400_BAD_REQUEST
+    assert response.data['detail'] == 'Тикет не назначен оператору.'
+
+
+@pytest.mark.django_db
+def test_reply_ticket_not_found(api_client, test_operator):
+    api_client.force_authenticate(user=test_operator)
+    url = reverse('ticket-reply', args=[999])
+    response = api_client.post(url, data={'content': 'Динозавры живут на обратной стороне луны.'})
+
+    assert response.status_code == status.HTTP_404_NOT_FOUND

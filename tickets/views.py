@@ -70,6 +70,10 @@ class TicketViewSet(viewsets.ModelViewSet):
     @action(detail=True, methods=['post'])
     def reply(self, request, pk=None):
         ticket = self.get_object()
+
+        if not ticket.operator:
+            return Response({'detail': 'Тикет не назначен оператору.'}, status=status.HTTP_400_BAD_REQUEST)
+
         if ticket.status == 'closed':
             return Response({'detail': 'Нельзя ответить на закрытый тикет.'}, status=status.HTTP_400_BAD_REQUEST)
 
